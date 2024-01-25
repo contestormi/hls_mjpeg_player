@@ -54,6 +54,15 @@ class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
         return mainView
     }
     
+    deinit{
+        mainView.webView.stopLoading()
+        DispatchQueue.main.async {
+            WKWebsiteDataStore.default().removeData(ofTypes:
+                [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache],
+                    modifiedSince: Date(timeIntervalSince1970: 0), completionHandler:{})
+        }
+    }
+    
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         let isBlank = webView.url?.absoluteString.contains("blank") ?? false
         if isBlank { return }
@@ -100,19 +109,11 @@ class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
                 self?.loadUrl(arguments: call.arguments)
             case "pause":
                 self?.pause()
-            case "clearCache":
-                self?.clearCache(result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
         }
         mainView.webView.navigationDelegate = self
-    }
-    
-    private func clearCache(result: @escaping FlutterResult){
-        WKWebsiteDataStore.default().removeData(ofTypes:
-            [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache],
-                modifiedSince: Date(timeIntervalSince1970: 0), completionHandler:{ result(true) })
     }
 }
 
@@ -158,6 +159,7 @@ private class HlsMjpegPlayerView: UIView{
         config.rect = webView.frame
         webView.takeSnapshot(with: config, completionHandler: { (image: UIImage?, error: Error?) in
             self.imageView.image = image
+            self.webView.stopLoading()
             self.webView.load(URLRequest(url: URL(string: "about:blank")!))
         })
     }

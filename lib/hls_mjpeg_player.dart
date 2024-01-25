@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-enum HlsMjpegPlayerStatus {
+enum MjpegPlayerStatus {
   loading,
   play,
   pause,
@@ -10,21 +10,21 @@ enum HlsMjpegPlayerStatus {
   undefine,
 }
 
-class HlsMjpegPlayerController extends ChangeNotifier {
+class MjpegPlayerController extends ChangeNotifier {
   final _mChannel = const MethodChannel('com.example.hls_mjpeg_player');
-  HlsMjpegPlayerStatus _status = HlsMjpegPlayerStatus.undefine;
+  MjpegPlayerStatus _status = MjpegPlayerStatus.undefine;
 
-  HlsMjpegPlayerController() {
+  MjpegPlayerController() {
     _mChannel.setMethodCallHandler((call) async {
       if (call.method == 'onStatusChange') {
         final status = call.arguments['status'] as String? ?? '';
         if (status.isNotEmpty) {
           _status = switch (status) {
-            'Loading' => HlsMjpegPlayerStatus.loading,
-            'Play' => HlsMjpegPlayerStatus.play,
-            'Pause' => HlsMjpegPlayerStatus.pause,
-            'Error' => HlsMjpegPlayerStatus.error,
-            _ => HlsMjpegPlayerStatus.undefine,
+            'Loading' => MjpegPlayerStatus.loading,
+            'Play' => MjpegPlayerStatus.play,
+            'Pause' => MjpegPlayerStatus.pause,
+            'Error' => MjpegPlayerStatus.error,
+            _ => MjpegPlayerStatus.undefine,
           };
           notifyListeners();
         }
@@ -32,19 +32,17 @@ class HlsMjpegPlayerController extends ChangeNotifier {
     });
   }
 
-  HlsMjpegPlayerStatus get status => _status;
+  MjpegPlayerStatus get status => _status;
 
   Future<void> pause() => _mChannel.invokeMethod('pause');
 
   Future<void> play(String url) => _mChannel.invokeMethod('play', {'url': url});
-
-  Future<void> clearCache() => _mChannel.invokeMethod('clearCache');
 }
 
-class HlsMjpegPlayer extends StatelessWidget {
+class MjpegPlayer extends StatelessWidget {
   final String url;
 
-  const HlsMjpegPlayer({
+  const MjpegPlayer({
     super.key,
     required this.url,
   });

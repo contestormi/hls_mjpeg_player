@@ -43,7 +43,7 @@ class PlayerPage extends StatefulWidget {
 }
 
 class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
-  final controller = HlsMjpegPlayerController();
+  final controller = MjpegPlayerController();
   final url = 'xxxxxx';
 
   @override
@@ -66,9 +66,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    controller
-      ..clearCache()
-      ..dispose();
+    controller.dispose();
     super.dispose();
   }
 
@@ -82,11 +80,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
               height: MediaQuery.of(context).size.width / 1.6,
               child: Stack(
                 children: [
-                  HlsMjpegPlayer(url: url),
+                  MjpegPlayer(url: url),
                   ListenableBuilder(
                     listenable: controller,
                     builder: (context, child) {
-                      if (controller.status == HlsMjpegPlayerStatus.loading) {
+                      if (controller.status == MjpegPlayerStatus.loading) {
                         return const Center(
                           child: CircularProgressIndicator(),
                         );
@@ -100,12 +98,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             ListenableBuilder(
               listenable: controller,
               builder: (context, child) {
-                if (controller.status == HlsMjpegPlayerStatus.play) {
+                if (controller.status == MjpegPlayerStatus.play) {
                   return ElevatedButton(
                     onPressed: controller.pause,
                     child: const Icon(Icons.pause),
                   );
-                } else if (controller.status == HlsMjpegPlayerStatus.pause) {
+                } else if (controller.status == MjpegPlayerStatus.pause) {
                   return ElevatedButton(
                     onPressed: () => controller.play(url),
                     child: const Icon(Icons.play_arrow),
