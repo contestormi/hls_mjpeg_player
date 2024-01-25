@@ -124,6 +124,8 @@ private class HlsMjpegPlayerView: UIView{
     override init(frame: CGRect) {
         super.init(frame: frame)
         webView.translatesAutoresizingMaskIntoConstraints = false
+        webView.scrollView.isUserInteractionEnabled = false
+        webView.scrollView.isScrollEnabled = false
         
         imageView.contentMode = .scaleToFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
