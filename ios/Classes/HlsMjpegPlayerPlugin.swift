@@ -11,12 +11,12 @@ public class HlsMjpegPlayerPlugin: NSObject, FlutterPlugin {
 
 class HlsMjpegPlayerFactory: NSObject, FlutterPlatformViewFactory {
     private var registrar: FlutterPluginRegistrar
-
+    
     init(registrar: FlutterPluginRegistrar) {
         self.registrar = registrar
         super.init()
     }
-
+    
     func create(
         withFrame frame: CGRect,
         viewIdentifier viewId: Int64,
@@ -29,16 +29,17 @@ class HlsMjpegPlayerFactory: NSObject, FlutterPlatformViewFactory {
             registrar: registrar
         )
     }
-
+    
     public func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
-          return FlutterStandardMessageCodec.sharedInstance()
+        return FlutterStandardMessageCodec.sharedInstance()
     }
 }
 
 class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
     private var mainView = HlsMjpegPlayerView()
     private var mChannel: FlutterMethodChannel?
-
+    private var resultHandler: FlutterResult?
+    
     init(
         frame: CGRect,
         viewIdentifier viewId: Int64,
@@ -49,7 +50,7 @@ class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
         initVar(registrar: registrar)
         loadUrl(arguments: args)
     }
-
+    
     func view() -> UIView {
         return mainView
     }
@@ -58,8 +59,8 @@ class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
         mainView.webView.stopLoading()
         DispatchQueue.main.async {
             WKWebsiteDataStore.default().removeData(ofTypes:
-                [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache],
-                    modifiedSince: Date(timeIntervalSince1970: 0), completionHandler:{})
+                                                        [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache],
+                                                    modifiedSince: Date(timeIntervalSince1970: 0), completionHandler:{})
         }
     }
     
@@ -69,7 +70,7 @@ class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
         let arg: [String: String?] = ["status": "Error"]
         mChannel?.invokeMethod("onStatusChange", arguments: arg)
     }
-
+    
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         let isBlank = webView.url?.absoluteString.contains("blank") ?? false
         if isBlank { return }
@@ -82,6 +83,9 @@ class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
         let arg: [String: String?] = ["status": isBlank ? "Pause" : "Play"]
         mChannel?.invokeMethod("onStatusChange", arguments: arg)
         mainView.imageView.isHidden = !isBlank
+        if let resultHandler = resultHandler {
+            resultHandler("Loaded")
+        }
     }
     
     private func loadUrl(arguments args: Any?){
@@ -90,7 +94,7 @@ class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
         
         let argumentsDictionary = args as? Dictionary<String, Any> ?? [:]
         let initialUrl = argumentsDictionary["url"] as? String ?? ""
-
+        
         let url = URL(string: initialUrl)
         if(!initialUrl.isEmpty && url != nil){
             mainView.webView.load(URLRequest(url: url!))
@@ -104,6 +108,7 @@ class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
     private func initVar(registrar: FlutterPluginRegistrar){
         mChannel = FlutterMethodChannel(name: "com.example.hls_mjpeg_player", binaryMessenger: registrar.messenger())
         mChannel?.setMethodCallHandler{ [weak self] call, result in
+            self?.resultHandler = result
             switch call.method{
             case "play":
                 self?.loadUrl(arguments: call.arguments)
@@ -120,7 +125,7 @@ class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
 private class HlsMjpegPlayerView: UIView{
     let imageView = UIImageView()
     let webView = WKWebView()
-
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         webView.translatesAutoresizingMaskIntoConstraints = false
@@ -134,7 +139,7 @@ private class HlsMjpegPlayerView: UIView{
         addSubview(imageView)
         addLayoutConstraint()
     }
-        
+    
     required init?(coder: NSCoder) {
         fatalError("Unsupported")
     }
