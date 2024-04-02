@@ -42,19 +42,15 @@ class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
     private var htmlContent: String = """
 <html style="height: 100%; width: 100%;">
 <body style="margin: 0px;
-			 height: 100%;
+             height: 100%;
              width: 100%;"
       bgcolor="#000000">
 <img
         style="-webkit-user-select:none;
-        position: absolute;
-		top:0;
-		left: 0;
-		width:100%;
-		height: 100%;
-		object-fit: contain;
-		object-position: center;
-        "
+        width:100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;"
         src="#URL#">
 </body>
 </html>
