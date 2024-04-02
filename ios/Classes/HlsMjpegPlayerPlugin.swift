@@ -39,7 +39,22 @@ class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
     private var mainView = HlsMjpegPlayerView()
     private var mChannel: FlutterMethodChannel?
     private var resultHandler: FlutterResult?
-    
+    private var htmlContent: String = """
+<html style="height: 100%; width: 100%;">
+<body style="margin: 0px;
+             height: 100%;
+             width: 100%;"
+      bgcolor="#000000">
+<img
+        style="-webkit-user-select:none;
+        width:100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;"
+        src="#URL#">
+</body>
+</html>
+"""
     init(
         frame: CGRect,
         viewIdentifier viewId: Int64,
@@ -97,7 +112,8 @@ class HlsMjpegPlayer: NSObject, FlutterPlatformView, WKNavigationDelegate {
         
         let url = URL(string: initialUrl)
         if(!initialUrl.isEmpty && url != nil){
-            mainView.webView.load(URLRequest(url: url!))
+            mainView.webView.loadHTMLString(self.htmlContent.replacingOccurrences(of: "#URL#", with: initialUrl),baseURL: url)
+          //  mainView.webView.load(URLRequest(url: url!))
         }
     }
     
@@ -171,3 +187,4 @@ private class HlsMjpegPlayerView: UIView{
         })
     }
 }
+
